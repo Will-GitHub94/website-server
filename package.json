@@ -1,0 +1,31 @@
+{
+  "name": "website-server",
+  "version": "1.0.0",
+  "description": "API for professional website",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "node",
+    "express"
+  ],
+  "author": "Will Ashworth",
+  "license": "ISC",
+  "dependencies": {
+    "babel-polyfill": "^6.26.0",
+    "babel-register": "^6.26.0",
+    "body-parser": "^1.18.2",
+    "cors": "^2.8.4",
+    "dotenv": "^5.0.1",
+    "eslint": "^4.18.2",
+    "express": "^4.16.2",
+    "morgan": "^1.9.0",
+    "require": "^2.4.20",
+    "webpack": "^4.1.1"
+  },
+  "devDependencies": {
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-plugin-import": "^2.9.0"
+  }
+}
