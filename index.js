@@ -1,5 +1,5 @@
 require("babel-polyfill");
 require("babel-register");
-require("dotenv");
+require("dotenv").config();
 
 require("./src/app");
