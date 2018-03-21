@@ -2,8 +2,7 @@ import forEach from "lodash/forEach";
 import forOwn from "lodash/forOwn";
 import filter from "lodash/filter";
 
-import GitHubAPI from "./auth/github";
-
+import GitHubAPI from "./api/github";
 
 async function getLatestSha() {
 	return GitHubAPI().get("/git/refs/heads/master")
