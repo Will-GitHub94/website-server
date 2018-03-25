@@ -1,6 +1,6 @@
 import forEach from "lodash/forEach";
 import forOwn from "lodash/forOwn";
-import filter from "lodash/filter";
+import map from "lodash/map";
 
 import GitHubAPI from "./api/github";
 
@@ -34,21 +34,51 @@ async function getTree() {
 	}
 }
 
+function determineExtension(ext) {
+	const imgExt = [
+		"png",
+		"jpeg",
+		"jpg",
+		"gif",
+	];
+	let extension = "markdown";
+
+	if (imgExt.indexOf(ext.toLowerCase()) > -1) {
+		extension = "img";
+	}
+	return extension;
+}
+
 async function buildKnowledgeSections() {
 	try {
 		const knowledgeSections = {
-			architecture: [],
-			cryptography: [],
-			machineLearning: [],
-			networking: [],
+			architecture: {},
+			cryptography: {},
+			machineLearning: {},
+			networking: {},
 		};
 		const repoTree = await getTree();
+		let extension = "";
+		let extensionType = "markdown";
+
+		forOwn(knowledgeSections, (value, key) => {
+			knowledgeSections[key] = {
+				img: [],
+				md: [],
+			};
+		});
 
 		forEach(repoTree, (node) => {
 			forOwn(knowledgeSections, (value, key) => {
-				// 2nd condition checking if file
 				if (node.path.indexOf(key) > -1 && node.path.indexOf(".") > -1) {
-					knowledgeSections[key].push(node.path);
+					extension = node.path.substr(node.path.indexOf(".") + 1, node.path.length);
+					extensionType = determineExtension(extension);
+
+					if (extensionType === "img") {
+						knowledgeSections[key].img.push(node.path);
+					} else {
+						knowledgeSections[key].md.push(node.path);
+					}
 				}
 			});
 		});
@@ -58,49 +88,61 @@ async function buildKnowledgeSections() {
 	}
 }
 
+async function getFileContents(paths) {
+	try {
+		const fileContents = [];
+
+		await Promise.all(map(paths, async (path) => {
+			await GitHubAPI().get(`/contents/${path}`)
+				.then((resp) => {
+					fileContents.push(resp.data);
+				})
+				.catch((err) => {
+					return err;
+				});
+		}));
+
+		return fileContents;
+	} catch (err) {
+		return err;
+	}
+}
+
 async function getArchitectureFiles() {
 	const { architecture } = await buildKnowledgeSections();
 
-	return filter(architecture, (path) => {
-		return GitHubAPI().get(`/contents/${path}`)
-			.then((resp) => {
-				return resp;
-			})
-			.catch((err) => {
-				return err;
-			});
-	});
+	architecture.img = await getFileContents(architecture.img);
+	architecture.md = await getFileContents(architecture.md);
+
+	return architecture;
 }
 
-const getNetworkingFiles = () => {
-	const networkingPaths = buildKnowledgeSections().networking;
-	const networkingFiles = [];
+async function getNetworkingFiles() {
+	const { networking } = await buildKnowledgeSections();
 
-	forEach(networkingPaths, (path) => {
-		networkingFiles.push(GitHubAPI().get(`/contents/${path}`));
-	});
-	return networkingFiles;
-};
+	networking.img = await getFileContents(networking.img);
+	networking.md = await getFileContents(networking.md);
 
-const getCryptographyFiles = () => {
-	const cryptographyPaths = buildKnowledgeSections().networking;
-	const cryptographyFiles = [];
+	return networking;
+}
 
-	forEach(cryptographyPaths, (path) => {
-		cryptographyFiles.push(GitHubAPI().get(`/contents/${path}`));
-	});
-	return cryptographyFiles;
-};
+async function getCryptographyFiles() {
+	const { cryptography } = await buildKnowledgeSections();
 
-const getMachineLearningFiles = () => {
-	const machineLearningPaths = buildKnowledgeSections().machineLearning;
-	const machineLearningFiles = [];
+	cryptography.img = await getFileContents(cryptography.img);
+	cryptography.md = await getFileContents(cryptography.md);
 
-	forEach(machineLearningPaths, (path) => {
-		machineLearningFiles.push(GitHubAPI().get(`/contents/${path}`));
-	});
-	return machineLearningFiles;
-};
+	return cryptography;
+}
+
+async function getMachineLearningFiles() {
+	const { machineLearning } = await buildKnowledgeSections();
+
+	machineLearning.img = await getFileContents(machineLearning.img);
+	machineLearning.md = await getFileContents(machineLearning.md);
+
+	return machineLearning;
+}
 
 export default {
 	getArchitectureFiles,
