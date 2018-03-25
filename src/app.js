@@ -24,8 +24,12 @@ app.use(session({
 	knowledgeSections = await GitHub.buildKnowledgeSections();
 })();
 
-app.get("/", (req, res) => {
-	res.send("Base hit");
+app.get("/", async (req, res) => {
+	const readme = await GitHub.getREADMEContents();
+
+	res
+		.status(200)
+		.send(readme);
 });
 
 // GitHub

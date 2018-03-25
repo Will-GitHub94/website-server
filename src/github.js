@@ -50,7 +50,6 @@ function determineExtension(ext) {
 }
 
 async function buildKnowledgeSections() {
-	console.log("==== buildKnowledgeSections =====");
 	try {
 		const knowledgeSections = {
 			architecture: {},
@@ -83,7 +82,6 @@ async function buildKnowledgeSections() {
 				}
 			});
 		});
-		console.log("::: returning sections :::");
 		return knowledgeSections;
 	} catch (err) {
 		return err;
