@@ -50,6 +50,7 @@ function determineExtension(ext) {
 }
 
 async function buildKnowledgeSections() {
+	console.log("==== buildKnowledgeSections =====");
 	try {
 		const knowledgeSections = {
 			architecture: {},
@@ -82,7 +83,22 @@ async function buildKnowledgeSections() {
 				}
 			});
 		});
+		console.log("::: returning sections :::");
 		return knowledgeSections;
+	} catch (err) {
+		return err;
+	}
+}
+
+async function getREADMEContents() {
+	try {
+		return GitHubAPI().get("/contents/README.md")
+			.then((resp) => {
+				return resp.data.content;
+			})
+			.catch((err) => {
+				return err;
+			});
 	} catch (err) {
 		return err;
 	}
@@ -95,7 +111,7 @@ async function getFileContents(paths) {
 		await Promise.all(map(paths, async (path) => {
 			await GitHubAPI().get(`/contents/${path}`)
 				.then((resp) => {
-					fileContents.push(resp.data);
+					fileContents.push(resp.data.content);
 				})
 				.catch((err) => {
 					return err;
@@ -108,8 +124,8 @@ async function getFileContents(paths) {
 	}
 }
 
-async function getArchitectureFiles() {
-	const { architecture } = await buildKnowledgeSections();
+async function getArchitectureFiles(knowledge) {
+	const { architecture } = knowledge;
 
 	architecture.img = await getFileContents(architecture.img);
 	architecture.md = await getFileContents(architecture.md);
@@ -117,8 +133,8 @@ async function getArchitectureFiles() {
 	return architecture;
 }
 
-async function getNetworkingFiles() {
-	const { networking } = await buildKnowledgeSections();
+async function getNetworkingFiles(knowledge) {
+	const { networking } = knowledge;
 
 	networking.img = await getFileContents(networking.img);
 	networking.md = await getFileContents(networking.md);
@@ -126,8 +142,8 @@ async function getNetworkingFiles() {
 	return networking;
 }
 
-async function getCryptographyFiles() {
-	const { cryptography } = await buildKnowledgeSections();
+async function getCryptographyFiles(knowledge) {
+	const { cryptography } = knowledge;
 
 	cryptography.img = await getFileContents(cryptography.img);
 	cryptography.md = await getFileContents(cryptography.md);
@@ -135,8 +151,8 @@ async function getCryptographyFiles() {
 	return cryptography;
 }
 
-async function getMachineLearningFiles() {
-	const { machineLearning } = await buildKnowledgeSections();
+async function getMachineLearningFiles(knowledge) {
+	const { machineLearning } = knowledge;
 
 	machineLearning.img = await getFileContents(machineLearning.img);
 	machineLearning.md = await getFileContents(machineLearning.md);
@@ -149,4 +165,6 @@ export default {
 	getNetworkingFiles,
 	getCryptographyFiles,
 	getMachineLearningFiles,
+	getREADMEContents,
+	buildKnowledgeSections,
 };

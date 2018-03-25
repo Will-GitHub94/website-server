@@ -8,6 +8,8 @@ import GitHub from "./github";
 
 const app = express();
 
+let knowledgeSections;
+
 app.use(bodyParser.json());
 app.use(morgan("combined"));
 app.use(cors());
@@ -18,13 +20,17 @@ app.use(session({
 	saveUninitialized: true,
 }));
 
+(async () => {
+	knowledgeSections = await GitHub.buildKnowledgeSections();
+})();
+
 app.get("/", (req, res) => {
 	res.send("Base hit");
 });
 
 // GitHub
 app.get("/github/architecture", async (req, res) => {
-	const architectureFiles = await GitHub.getArchitectureFiles();
+	const architectureFiles = await GitHub.getArchitectureFiles(knowledgeSections);
 
 	res
 		.status(200)
@@ -32,7 +38,7 @@ app.get("/github/architecture", async (req, res) => {
 });
 
 app.get("/github/networking", async (req, res) => {
-	const networkingFiles = await GitHub.getNetworkingFiles();
+	const networkingFiles = await GitHub.getNetworkingFiles(knowledgeSections);
 
 	res
 		.status(200)
@@ -40,7 +46,7 @@ app.get("/github/networking", async (req, res) => {
 });
 
 app.get("/github/machineLearning", async (req, res) => {
-	const machineLearningFiles = await GitHub.getMachineLearningFiles();
+	const machineLearningFiles = await GitHub.getMachineLearningFiles(knowledgeSections);
 
 	res
 		.status(200)
@@ -48,7 +54,7 @@ app.get("/github/machineLearning", async (req, res) => {
 });
 
 app.get("/github/cryptography", async (req, res) => {
-	const cryptographyFiles = await GitHub.getCryptographyFiles();
+	const cryptographyFiles = await GitHub.getCryptographyFiles(knowledgeSections);
 
 	res
 		.status(200)
