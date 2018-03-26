@@ -33,36 +33,13 @@ app.get("/", async (req, res) => {
 });
 
 // GitHub
-app.get("/github/architecture", async (req, res) => {
-	const architectureFiles = await GitHub.getArchitectureFiles(knowledgeSections);
+app.get("/github/knowledge/:knowledgeType", async (req, res) => {
+	const knowledgeType = req.params.knowledgeType;
+	const architectureFiles = await GitHub.getKnowledgeFiles(knowledgeType, knowledgeSections);
 
 	res
 		.status(200)
 		.send(architectureFiles);
-});
-
-app.get("/github/networking", async (req, res) => {
-	const networkingFiles = await GitHub.getNetworkingFiles(knowledgeSections);
-
-	res
-		.status(200)
-		.send(networkingFiles);
-});
-
-app.get("/github/machineLearning", async (req, res) => {
-	const machineLearningFiles = await GitHub.getMachineLearningFiles(knowledgeSections);
-
-	res
-		.status(200)
-		.send(machineLearningFiles);
-});
-
-app.get("/github/cryptography", async (req, res) => {
-	const cryptographyFiles = await GitHub.getCryptographyFiles(knowledgeSections);
-
-	res
-		.status(200)
-		.send(cryptographyFiles);
 });
 
 app.listen(process.env.PORT, () => {

@@ -122,47 +122,17 @@ async function getFileContents(paths) {
 	}
 }
 
-async function getArchitectureFiles(knowledge) {
-	const { architecture } = knowledge;
+async function getKnowledgeFiles(knowledgeType, knowledge) {
+	const type = knowledge[knowledgeType];
 
-	architecture.img = await getFileContents(architecture.img);
-	architecture.md = await getFileContents(architecture.md);
+	type.img = await getFileContents(type.img);
+	type.md = await getFileContents(type.img);
 
-	return architecture;
-}
-
-async function getNetworkingFiles(knowledge) {
-	const { networking } = knowledge;
-
-	networking.img = await getFileContents(networking.img);
-	networking.md = await getFileContents(networking.md);
-
-	return networking;
-}
-
-async function getCryptographyFiles(knowledge) {
-	const { cryptography } = knowledge;
-
-	cryptography.img = await getFileContents(cryptography.img);
-	cryptography.md = await getFileContents(cryptography.md);
-
-	return cryptography;
-}
-
-async function getMachineLearningFiles(knowledge) {
-	const { machineLearning } = knowledge;
-
-	machineLearning.img = await getFileContents(machineLearning.img);
-	machineLearning.md = await getFileContents(machineLearning.md);
-
-	return machineLearning;
+	return type;
 }
 
 export default {
-	getArchitectureFiles,
-	getNetworkingFiles,
-	getCryptographyFiles,
-	getMachineLearningFiles,
 	getREADMEContents,
 	buildKnowledgeSections,
+	getKnowledgeFiles,
 };
