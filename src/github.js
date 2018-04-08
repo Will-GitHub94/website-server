@@ -3,6 +3,7 @@ import forOwn from "lodash/forOwn";
 import map from "lodash/map";
 
 import GitHubAPI from "./api/github";
+import saveFile from "./db/save";
 
 async function getLatestSha() {
 	return GitHubAPI().get("/git/refs/heads/master")
@@ -50,6 +51,7 @@ function determineExtension(ext) {
 }
 
 async function buildKnowledgeSections() {
+	console.log("\n===== buildKnowledgeSections =====");
 	try {
 		const knowledgeSections = {
 			architecture: {},
@@ -61,6 +63,7 @@ async function buildKnowledgeSections() {
 		let extension = "";
 		let extensionType = "markdown";
 
+		// Just adding array properties to each section
 		forOwn(knowledgeSections, (value, key) => {
 			knowledgeSections[key] = {
 				img: [],
@@ -102,14 +105,16 @@ async function getREADMEContents() {
 	}
 }
 
-async function getFileContents(paths) {
+async function getFileContents(paths, fileType) {
+	console.log("\n===== getFileContents =====");
 	try {
-		const fileContents = [];
+		const fileContents = []
 
 		await Promise.all(map(paths, async (path) => {
 			await GitHubAPI().get(`/contents/${path}`)
 				.then((resp) => {
-					fileContents.push(resp.data.content);
+					saveFile(resp, fileType, path);
+					// fileContents.push(resp.data.content);
 				})
 				.catch((err) => {
 					return err;
@@ -123,11 +128,16 @@ async function getFileContents(paths) {
 }
 
 async function getKnowledgeFiles(knowledgeType, knowledge) {
+	console.log("\n===== getKnowledgeFiles =====");
+	console.log(knowledge);
 	const type = knowledge[knowledgeType];
 
-	type.img = await getFileContents(type.img);
-	type.md = await getFileContents(type.img);
+	type.paths = type.md;
+	type.img = await getFileContents(type.img, "img");
+	type.md = await getFileContents(type.md, "md");
 
+	console.log("::: paths :::");
+	console.log(type.paths);
 	return type;
 }
 
