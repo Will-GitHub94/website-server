@@ -3,7 +3,7 @@ import forOwn from "lodash/forOwn";
 import map from "lodash/map";
 
 import GitHubAPI from "./config";
-import saveFile from "./db/save";
+import saveKnowledge from "../../db/save";
 
 /*
   This file serves holds all interactions with GitHub API
@@ -56,113 +56,107 @@ function determineExtension(ext) {
 	return extension;
 }
 
-async function getREADMEContents() {
-	try {
-		return GitHubAPI().get("/contents/README.md")
-            .then((resp) => {
-                saveFile(resp, "md", "README.md");
-			})
-			.catch((err) => {
-				return err;
-			});
-	} catch (err) {
-		return err;
-	}
-}
-
-const getFileContents = (knowledge) => {
-    try {
-        forOwn(knowledge, (section) => {
-            forEach(section.md, (mdFile) => {
-                GitHubAPI.get(`/contents/${mdFile}`)
-                    .then((resp) => {
-                        saveFile(resp, "md", mdFile);
-                    })
-                    .catch((err) => {
-                        return err;
-                    });
-            });
-            forEach(section.img, (imgFile) => {
-                GitHubAPI.get(`/contents/${imgFile}`)
-                    .then((resp) => {
-                        saveFile(resp, "img", imgFile);
-                    })
-                    .catch((err) => {
-                        return err;
-                    });
-            });
-        });
-    } catch (e) {
-        return e;
-    }
-};
-
-// The blocking version of the function above
-
-// async function getFileContents(knowledge) {
-// 	console.log("\n===== getFileContents =====");
+// async function getREADMEContents() {
 // 	try {
-// 		const fileContents = []
-
-// 		await Promise.all(map(paths, async (path) => {
-// 			await GitHubAPI().get(`/contents/${path}`)
-// 				.then((resp) => {
-// 					saveFile(resp, fileType, path);
-// 					// fileContents.push(resp.data.content);
-// 				})
-// 				.catch((err) => {
-// 					return err;
-// 				});
-// 		}));
-
-// 		return fileContents;
+// 		return GitHubAPI().get("/contents/README.md")
+//             .then((resp) => {
+//                 saveFile(resp, "md", "README.md");
+// 			})
+// 			.catch((err) => {
+// 				return err;
+// 			});
 // 	} catch (err) {
 // 		return err;
 // 	}
 // }
 
+async function buildKnowledgeContents(knowledgeFileArray) {
+	try {
+		const fileContents = [];
+
+		await Promise.all(map(knowledgeFileArray, async (file) => {
+			await GitHubAPI().get(`/contents/${file.path}`)
+				.then((resp) => {
+					file.contents = resp.data.content;
+					fileContents.push(file);
+				})
+				.catch((err) => {
+					return err;
+				});
+		}));
+		return fileContents;
+	} catch (err) {
+		return err;
+	}
+}
+
+const buildKnowledgeStructure = () => {
+	return {
+		architecture: {
+			imgs: [],
+			mds: [],
+		},
+		networking: {
+			imgs: [],
+			mds: [],
+		},
+		cryptography: {
+			imgs: [],
+			mds: [],
+		},
+		machineLearning: {
+			imgs: [],
+			mds: [],
+		},
+	};
+};
+
 async function buildKnowledgePaths() {
 	console.log("\n===== buildKnowledgeSections =====");
 	try {
-		const knowledgeSections = {
-			architecture: {},
-			cryptography: {},
-			machineLearning: {},
-			networking: {},
-		};
+		const knowledge = buildKnowledgeStructure();
 		const repoTree = await getTree();
 		let extension = "";
 		let extensionType = "markdown";
 
-		// Just adding array properties to each section
-		forOwn(knowledgeSections, (value, key) => {
-			knowledgeSections[key] = {
-				img: [],
-				md: [],
-			};
-		});
-
 		forEach(repoTree, (node) => {
-			forOwn(knowledgeSections, (value, key) => {
+			forOwn(knowledge, (value, key) => {
 				if (node.path.indexOf(key) > -1 && node.path.indexOf(".") > -1) {
 					extension = node.path.substr(node.path.indexOf(".") + 1, node.path.length);
 					extensionType = determineExtension(extension);
 
 					if (extensionType === "img") {
-						knowledgeSections[key].img.push(node.path);
-					} else {
-						knowledgeSections[key].md.push(node.path);
+						knowledge[key].imgs.push({
+							path: node.path,
+						});
+					} else if (extensionType === "markdown") {
+						knowledge[key].mds.push({
+							path: node.path,
+						});
 					}
 				}
 			});
-        });
-        getFileContents(knowledgeSections);
-		return knowledgeSections;
+		});
+		return knowledge;
+	} catch (err) {
+		return err;
+	}
+}
+
+async function initLocalKnowledgeStorage() {
+	try {
+		const knowledge = await buildKnowledgePaths();
+
+		forOwn(knowledge, async (value, key) => {
+			knowledge[key].imgs = await buildKnowledgeContents(value.imgs);
+			knowledge[key].mds = await buildKnowledgeContents(value.mds);
+		});
+		saveKnowledge(knowledge);
 	} catch (err) {
 		return err;
 	}
 }
 
 export default {
-	buildKnowledgePaths,
+	initLocalKnowledgeStorage,
 };

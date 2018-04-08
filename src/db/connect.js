@@ -1,36 +1,32 @@
-import mongoose, { mongo } from "mongoose";
+import mongoose from "mongoose";
 
-const Schema = new mongoose.Schema;
+// Initialize Mongoose
+const connect = (cb) => {
+	mongoose
+		.connect(`mongodb://${process.env.MONGO_HOST}:${process.env.MONGO_PORT}/${process.env.MONGO_DB}`, {
+			autoIndex: false,
+		})
+		.then((conn) => {
+			if (cb) {
+				cb(conn);
+			}
+		})
+		.catch((err) => {
+			console.error("Could not connect to MongoDB!");
+			console.log(err);
+		});
 
-mongoose.connect(`mongodb://${MONGO_HOST}:${MONGO_PORT}/${MONGO_DB}`, {
-    autoIndex: false,
-});
+};
 
-const markdownSchema = new Schema({
-    section: String,
-    title: String,
-    author: {
-        type: String,
-        default: "Will Ashworth",
-    },
-    contents: String,
-    path: String,
-    links: Array,
-    images: Array,
-});
+const disconnect = (cb) => {
+	mongoose.connection.db
+		.close((err) => {
+			console.info("Disconnected from MongoDB.");
+			return cb(err);
+		});
+};
 
-const imageSchema = new Schema({
-    section: String,
-    markdownFile: ObjectId,
-    contents: String,
-});
-
-const Markdown = mongoose.model("Markdown", markdownSchema);
-const Image = mongoose.model("Image", imageSchema);
-
-// Exporting the models but these still need to be
-// instantiated into documents before can be saved
-export {
-    Markdown,
-    Image,
+export default {
+	connect,
+	disconnect,
 };

@@ -9,6 +9,9 @@
         "linebreak-style": ["error", "unix"],
 		"no-tabs": "off",
 		"no-console": "off",
-		"arrow-body-style": ["error", "always"]
+		"arrow-body-style": ["error", "always"],
+		"no-param-reassign": ["error", {
+			"props": false
+		}]
     }
 }

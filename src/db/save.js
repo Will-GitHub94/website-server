@@ -1,20 +1,23 @@
 import forOwn from "lodash/forOwn";
 import forEach from "lodash/forEach";
-import { Markdown, Image } from "./connect";
+import { Markdown, Image } from "./config";
 
-export default (response, fileType, path) => {
-    // save this into the db
-    if (fileTypes === "img") {
-        new Image({
-            section: path.substring(0, path.indexOf("/")),
-            path: path,
-            contents: response.data.content,
-        }).save();
-    } else if (fileTypes === "md") {
-        new Markdown({
-            section: path.substring(0, path.indexOf("/")),
-            path: path,
-            contents: response.data.content,
-        }).save();
-    }
+export default (knowledge) => {
+	forOwn(knowledge, (value, key) => {
+		forEach(knowledge[key].imgs, (img) => {
+			new Image({
+				section: img.path.substring(0, img.path.indexOf("/")),
+				contents: img.contents,
+				path: img.path,
+			}).save();
+		});
+
+		forEach(knowledge[key].mds, (md) => {
+			new Markdown({
+				section: md.path.substring(0, md.path.indexOf("/")),
+				path: md.path,
+				contents: md.contents,
+			}).save();
+		});
+	});
 };

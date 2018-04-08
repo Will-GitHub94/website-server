@@ -30,6 +30,7 @@
     "passport": "^0.4.0",
     "passport-github": "^1.1.0",
     "require": "^2.4.20",
+    "showdown": "^1.8.6",
     "webpack": "^4.1.1"
   },
   "devDependencies": {
