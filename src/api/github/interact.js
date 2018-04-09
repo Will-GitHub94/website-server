@@ -112,7 +112,6 @@ const buildKnowledgeStructure = () => {
 };
 
 async function buildKnowledgePaths() {
-	console.log("\n===== buildKnowledgeSections =====");
 	try {
 		const knowledge = buildKnowledgeStructure();
 		const repoTree = await getTree();
@@ -147,10 +146,10 @@ async function initLocalKnowledgeStorage() {
 	try {
 		const knowledge = await buildKnowledgePaths();
 
-		forOwn(knowledge, async (value, key) => {
-			knowledge[key].imgs = await buildKnowledgeContents(value.imgs);
-			knowledge[key].mds = await buildKnowledgeContents(value.mds);
-		});
+		await Promise.all(map(knowledge, async (file) => {
+			file.imgs = await buildKnowledgeContents(file.imgs);
+			file.mds = await buildKnowledgeContents(file.mds);
+		}));
 		saveKnowledge(knowledge);
 	} catch (err) {
 		return err;
