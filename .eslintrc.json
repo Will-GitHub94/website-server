@@ -4,7 +4,7 @@
         "node": true
     },
     "rules": {
-        "quotes": ["error", "double"],
+        "quotes": "off",
         "indent": ["error", "tab"],
         "linebreak-style": ["error", "unix"],
 		"no-tabs": "off",
@@ -12,6 +12,7 @@
 		"arrow-body-style": ["error", "always"],
 		"no-param-reassign": ["error", {
 			"props": false
-		}]
+		}],
+		"no-cond-assign": "off"
     }
 }

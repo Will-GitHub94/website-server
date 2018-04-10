@@ -1,23 +1,22 @@
 import forOwn from "lodash/forOwn";
 import forEach from "lodash/forEach";
-// import map from "lodash/map";
+import map from "lodash/map";
 import { Markdown, Image } from "./config";
 
 const getImageTags = (openTag, contents) => {
-	const imgTagIndices = [];
 	const imgTags = [];
-	let startIndex = 0;
-	let index;
 
-	while ((index = contents.indexOf(openTag, startIndex)) > -1) {
-		imgTagIndices.push(index);
-		startIndex = index + openTag.length;
+	let imgOpenTagIndex;
+	let imgCloseTagIndex = 0;
+	let imgTagLength;
+
+	// imgOpenTagIndex = index of next image open tag
+	// substr 2nd param is length of tag
+	while ((imgOpenTagIndex = contents.indexOf(openTag, imgCloseTagIndex)) > -1) {
+		imgCloseTagIndex = contents.indexOf("/>", imgOpenTagIndex);
+		imgTagLength = ((imgCloseTagIndex - imgOpenTagIndex) + 2);
+		imgTags.push(contents.substr(imgOpenTagIndex, imgTagLength));
 	}
-
-	forEach(imgTagIndices, (imgTagIndex) => {
-		imgTags.push(contents.substring(imgTagIndex, contents.indexOf("/>")));
-	});
-	console.log(imgTags);
 	return imgTags;
 };
 
@@ -36,13 +35,18 @@ export default (knowledge) => {
 
 		forEach(knowledge[key].mds, (md) => {
 			convertedContents = Buffer.from(md.contents, "base64").toString("ascii");
-			imgTags = getImageTags("src=", convertedContents);
+			imgTags = getImageTags("<img", convertedContents);
 
 			new Markdown({
 				section: md.path.substring(0, md.path.indexOf("/")),
 				path: md.path,
 				contents: convertedContents,
-				images: [],
+				images: map(imgTags, (imgTag) => {
+					const srcStartIndex = (imgTag.indexOf('src="') + 5);
+					const srcEndIndex = imgTag.indexOf('"', srcStartIndex);
+
+					return imgTag.substring(srcStartIndex, srcEndIndex);
+				}),
 			}).save();
 		});
 	});
