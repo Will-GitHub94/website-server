@@ -3,11 +3,8 @@ import session from "express-session";
 import bodyParser from "body-parser";
 import morgan from "morgan";
 import cors from "cors";
-// import forEach from "lodash/forEach";
 
-import GitHub from "./api/github/interact";
-import db from "./db/connect";
-// import saveAll from "./db/save";
+import GitHub from "./github";
 
 const app = express();
 
@@ -24,23 +21,19 @@ app.use(session({
 }));
 
 (async () => {
-	db.connect(async (connDb) => {
-		// Needs to initially check whether the DB has been populated or not
-		knowledgeSections = await GitHub.initLocalKnowledgeStorage();
-	});
+	knowledgeSections = await GitHub.buildKnowledgeSections();
 })();
 
-app.get("/knowledge", async (req, res) => {
-	const readme = await GitHub.getREADMEContents();
+app.get("/github/knowledge", async (req, res) => {
+	const readme = await GitHub.getREADMEFile();
 
 	res
 		.status(200)
 		.send(readme);
 });
 
-// GitHub
 app.get("/github/knowledge/:knowledgeType", async (req, res) => {
-	const knowledgeType = req.params.knowledgeType;
+	const { knowledgeType } = req.params;
 	const knowledgeFiles = await GitHub.getKnowledgeFiles(knowledgeType, knowledgeSections);
 
 	res
