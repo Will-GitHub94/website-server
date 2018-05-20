@@ -34,7 +34,10 @@ app.get("/github/knowledge", async (req, res) => {
 
 app.get("/github/knowledge/:knowledgeType", async (req, res) => {
 	const { knowledgeType } = req.params;
+	const paths = knowledgeSections[knowledgeType].md;
 	const knowledgeFiles = await GitHub.getKnowledgeFiles(knowledgeType, knowledgeSections);
+
+	knowledgeFiles.paths = paths;
 
 	res
 		.status(200)

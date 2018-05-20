@@ -53,7 +53,10 @@ async function getFileContents(paths) {
 		await Promise.all(map(paths, async (path) => {
 			await GitHubAPI().get(`/contents/${path}`)
 				.then((resp) => {
-					fileContents.push(resp.data.content);
+					fileContents.push({
+						path,
+						content: resp.data.content,
+					});
 				})
 				.catch((err) => {
 					return err;
